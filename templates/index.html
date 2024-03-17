@@ -1,0 +1,86 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="music-player">
+            <nav>
+                <div class="circle">
+                    <i class="fa-solid fa-angle-left"></i>
+                </div>
+                <div class="circle">
+                    <i class="fa-solid fa-bars"></i>
+                </div>
+            </nav>
+
+            {% for item in page_obj %}
+            <img src="{{item.image.url}}" alt="" class="song-img">
+            <h1>{{item.title}}</h1>
+            <p>{{item.artist}}</p>
+
+            <audio id="song">
+                <source src="{% if item.audio_file %}{{item.audio_file.url}} {% else %} {{item.audio_link}} {% endif %}" type="audio/mpeg">
+            </audio>
+
+            <input type="range" value="0" id="progress">
+
+            <div class="controls">
+                <a href="{% if page_obj.has_previous %}?page={{ page_obj.previous_page_number }}{% endif %}"><i class="fa-solid fa-backward" id="previousButton"></i></a>
+                <a><i onclick="playPause()" class="fa-solid fa-play" id="ctrlicon"></i></a>
+                <a href="{% if page_obj.has_next %}?page={{ page_obj.next_page_number }} {% endif %}"><i class="fa-solid fa-forward" id="nextButton"></i></a>
+            </div>
+
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        let progress = document.getElementById("progress");
+        let song = document.getElementById("song");
+        let ctrlicon = document.getElementById("ctrlicon");
+        let previousButton = document.getElementById('previousButton');
+        let nextButton = document.getElementById('nextButton');
+
+        song.onloadedmetadata = function() {
+            progress.max = song.duration;
+            progress.value = song.currentTime;
+        }
+
+        function playPause() {
+            if(ctrlicon.classList.contains("fa-pause")) {
+                song.pause();
+                ctrlicon.classList.remove("fa-pause");
+                ctrlicon.classList.add("fa-play");
+            }
+            else {
+                song.play();
+                ctrlicon.classList.remove("fa-play");
+                ctrlicon.classList.add("fa-pause");
+            }
+        }
+
+        if(song.play()) {
+            setInterval(() => {
+                progress.value = song.currentTime;
+            }, 500);
+        }
+
+        progress.onchange = function() {
+            song.play();
+            song.currentTime = progress.value;
+            ctrlicon.classList.remove("fa-play");
+            ctrlicon.classList.add("fa-pause");
+        }
+
+    </script>
+
+    <script src="https://kit.fontawesome.com/a6c0a357bb.js" crossorigin="anonymous"></script>
+</body>
+</html>
